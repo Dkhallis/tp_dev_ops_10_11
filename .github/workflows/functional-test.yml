@@ -1,0 +1,17 @@
+name: Functional test
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  functional-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test MariaDB + appli
+        run: bash tests/functional_test.sh
