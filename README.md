@@ -1,4 +1,4 @@
-# flask-mariadb-cicd
+# tp_dev_ops_10_11
 
 Petite appli Flask qui teste la connexion à une base MariaDB.
 La page d'accueil affiche "Database Connection Status: Connected" si la base répond, sinon "Disconnected".
@@ -30,7 +30,7 @@ Ensuite l'appli (image récupérée depuis GHCR) :
 ```bash
 docker run -d --name app --network app-net -p 5000:5000 \
   -e DB_HOST=db -e DB_USER=root -e DB_PASSWORD=monmdp -e DB_NAME=appdb \
-  ghcr.io/<Dkhallis>/flask-mariadb-cicd:latest
+  ghcr.io/dkhallis/flask-mariadb-cicd:latest
 ```
 
 L'appli est dispo sur http://localhost:5000
@@ -51,3 +51,28 @@ python app.py
 ## Commits
 
 J'utilise les Conventional Commits (feat:, fix:, docs:, ci:, test:...).
+
+## CI/CD
+
+### Publication de l'image
+
+Le workflow `.github/workflows/publish.yml` build l'image et la pousse sur GHCR à chaque push sur main.
+Elle est taguée `latest` + le SHA du commit. Quand on pousse un tag `vX.Y.Z`, l'image est aussi publiée avec la version (ex : `1.0.0`).
+La connexion à GHCR utilise le `GITHUB_TOKEN` fourni par GitHub, donc pas de mot de passe dans le repo.
+
+Le package est public :
+
+```bash
+docker pull ghcr.io/<compte>/flask-mariadb-cicd:1.0.0
+```
+
+### Test avant merge
+
+À chaque PR vers main, `.github/workflows/functional-test.yml` lance `tests/functional_test.sh` :
+- démarre un conteneur MariaDB (mot de passe généré au moment du test)
+- build et démarre l'appli sur le même réseau
+- appelle la page d'accueil et vérifie que la réponse est exactement "Database Connection Status: Connected"
+
+Si la réponse est différente, le script sort en erreur et le check est rouge.
+
+La branche main est protégée : PR obligatoire et le check `functional-test` doit passer pour pouvoir merger.
