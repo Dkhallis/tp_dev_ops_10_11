@@ -40,7 +40,7 @@ fi
 echo "Build et démarrage de l'appli..."
 docker build -t app-test .
 docker run -d --name app --network test-net -p 5000:5000 \
-  -e DB_HOST=wrong-host -e DB_USER=root \
+  -e DB_HOST=db -e DB_USER=root \
   -e DB_PASSWORD="$DB_PASSWORD" -e DB_NAME="$DB_NAME" \
   app-test
 
